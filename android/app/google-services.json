@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "371341843805",
-    "project_id": "twitter-flutter-26b89",
-    "storage_bucket": "twitter-flutter-26b89.appspot.com"
+    "project_number": "1022730543292",
+    "project_id": "ecommerce-b8226",
+    "storage_bucket": "ecommerce-b8226.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:371341843805:android:84dadd8871a65a69d45cb4",
+        "mobilesdk_app_id": "1:1022730543292:android:69c380bea5771f044df0b9",
         "android_client_info": {
-          "package_name": "com.veloxlabs.twitterflutter"
+          "package_name": "com.kamal.ecommerce"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAhJ0hS2B2Qj2weZqbiKoy4mGBmzDpYTjk"
+          "current_key": "AIzaSyApq8IVCcteKWoWdW4wpEIwKOIxqdicaAc"
         }
       ],
       "services": {
