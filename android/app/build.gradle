@@ -43,7 +43,8 @@ flutter {
 dependencies {
     // Import the Firebase BoM
     implementation platform('com.google.firebase:firebase-bom:33.3.0')
-
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-firestore'
     // Add the dependencies for Firebase products you want to use
     // e.g., Firebase Analytics
     // implementation 'com.google.firebase:firebase-analytics'
