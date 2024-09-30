@@ -1,0 +1,57 @@
+name: Deploy to Firebase
+on:
+    push:
+      branches:
+        - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3  # Ensure this is the latest version
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3  # Ensure this is the latest version
+        with:
+          java-version: '17'  # or any version your app requires
+          distribution: 'adopt'  # Specify the distribution
+
+      - name: Increment Build Number
+        run: |
+          # Read the current version and build number
+          current_version=$(grep 'version:' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1)
+          current_build=$(grep 'version:' pubspec.yaml | cut -d "+" -f2)
+          new_build=$((current_build + 1))
+          
+          # Update pubspec.yaml with the new build number
+          sed -i "s/version: .*/version: $current_version+$new_build/" pubspec.yaml
+          
+          # Output the new version for logging
+          echo "Updated version to $current_version+$new_build"
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3  # Ensure this is the latest version
+        with:
+          name: my_flutter_app_apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload Artifact to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          groups: tester
+          file: build/app/outputs/flutter-apk/app-release.apk 
+          releaseNotes: ${{ github.event.inputs.release_notes }}
