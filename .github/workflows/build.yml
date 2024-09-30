@@ -53,6 +53,6 @@ jobs:
         with:
           appId: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
           serviceCredentialsFileContent: ${{ secrets.SERVICE_CREDENTIALS_FILE_CONTENT }}
-          testers: "test@example.com"
+          testers: "kushalpokharel234@gmail.com"
           file: build/app/outputs/flutter-apk/app-release.apk
           debug: true
