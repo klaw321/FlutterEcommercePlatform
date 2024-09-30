@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "1022730543292",
-    "project_id": "ecommerce-b8226",
-    "storage_bucket": "ecommerce-b8226.appspot.com"
+    "project_number": "656183890601",
+    "project_id": "twitter-flutter-4b5b9",
+    "storage_bucket": "twitter-flutter-4b5b9.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1022730543292:android:69c380bea5771f044df0b9",
+        "mobilesdk_app_id": "1:656183890601:android:9ffd577f1bb34955f40fb8",
         "android_client_info": {
-          "package_name": "com.kamal.ecommerce"
+          "package_name": "com.kamal.twitter"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyApq8IVCcteKWoWdW4wpEIwKOIxqdicaAc"
+          "current_key": "AIzaSyAR8VqEEaUMEy4e7Jl-z54g9ScMb8ELW5E"
         }
       ],
       "services": {
