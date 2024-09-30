@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.kamal.ecommerce"
+    namespace = "com.kamal.twitter"
     compileSdk = 34 // Set to the latest stable version
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.kamal.ecommerce"
+        applicationId = "com.kamal.twitter"
         minSdk = 23 // Updated from flutter.minSdkVersion to 23
         targetSdk = 34 // Set to the latest stable version
         versionCode = flutter.versionCode
@@ -51,4 +51,5 @@ dependencies {
 
     // Other Firebase products can be added similarly without specifying the version
 }
+
 
