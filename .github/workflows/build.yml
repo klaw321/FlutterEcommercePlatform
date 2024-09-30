@@ -55,4 +55,4 @@ jobs:
           serviceCredentialsFileContent: ${{ secrets.SERVICE_CREDENTIALS_FILE_CONTENT }}
           groups: all_testers
           file: build/app/outputs/flutter-apk/app-release.apk
-
+          debug: true
