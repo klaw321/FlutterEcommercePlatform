@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'E-Commerce App',
+      title: 'Flutter-twitter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -33,7 +33,12 @@ class AuthScreen extends StatelessWidget {
       appBar: AppBar(title: Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-      body: Image.asset('assets/images/kamal.jpg')
+      body: Center(
+        child: Container(
+            width: 100,
+            height: 100,
+            child: Image.asset('assets/images/kamal.jpg'))
+           ), 
         child: Column(
           children: [
             TextField(
