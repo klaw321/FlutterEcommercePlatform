@@ -33,6 +33,7 @@ class AuthScreen extends StatelessWidget {
       appBar: AppBar(title: Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
+      body: Image.asset('assets/images/kamal.jpg')
         child: Column(
           children: [
             TextField(
