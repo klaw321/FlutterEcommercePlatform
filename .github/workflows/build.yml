@@ -51,7 +51,6 @@ jobs:
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
-          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: tester
           file: build/app/outputs/flutter-apk/app-release.apk 
           releaseNotes: ${{ github.event.inputs.release_notes }}
