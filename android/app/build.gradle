@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId = "com.kamal.ecommerce"
         minSdk = 23 // Updated from flutter.minSdkVersion to 23
-        targetSdk = 33 // Set to the latest stable version
+        targetSdk = 34 // Set to the latest stable version
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
