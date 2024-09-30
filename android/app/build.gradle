@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.example.e_commerce"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 33 // Set to the latest stable version
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -23,8 +23,8 @@ android {
 
     defaultConfig {
         applicationId = "com.kamal.ecommerce"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 23 // Updated from flutter.minSdkVersion to 23
+        targetSdk = 33 // Set to the latest stable version
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -51,3 +51,4 @@ dependencies {
 
     // Other Firebase products can be added similarly without specifying the version
 }
+
