@@ -25,9 +25,22 @@ pipeline {
         stage('Install Flutter') {
             steps {
                 script {
-                    // Ensure Flutter is installed
-                    sh "flutter pub get"
+                    // Check if Flutter is installed
+                    sh """
+                    if ! command -v flutter &> /dev/null; then
+                        echo "Flutter is not installed. Installing Flutter..."
+                        git clone https://github.com/flutter/flutter.git -b stable ~/flutter
+                        export PATH="$PATH:~/flutter/bin"
+                        echo "Flutter installed."
+                    else
+                        echo "Flutter is already installed."
+                    fi
+                    """
                 }
+                // Ensure flutter is available in the environment
+                sh "export PATH=\"\$PATH:~/flutter/bin\""
+                // Install dependencies
+                sh "flutter pub get"
             }
         }
 
@@ -77,4 +90,3 @@ pipeline {
         }
     }
 }
-
