@@ -26,6 +26,14 @@ pipeline {
             }
         }
 
+        stage('Archive APK') {
+            steps {
+                // Ensure artifacts are archived within a node block
+                archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
+            }
+        }
+
+
         stage('Increment Build Number') {
             steps {
                 script {
