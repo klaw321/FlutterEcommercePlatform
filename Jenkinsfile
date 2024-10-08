@@ -2,16 +2,15 @@ pipeline {
     agent any
 
     environment {
-        // Define where Flutter will be installed
-        FLUTTER_HOME = '/var/jenkins_home/flutter'
-        // Update PATH to include Flutter's bin directory
-        PATH = "${env.PATH}:${env.FLUTTER_HOME}/bin"
+        ANDROID_HOME = "${env.WORKSPACE}/Android/Sdk"
+        FLUTTER_HOME = "${env.WORKSPACE}/flutter"
+        PATH = "${env.PATH}:${env.ANDROID_HOME}/cmdline-tools/latest/bin:${env.ANDROID_HOME}/platform-tools:${env.FLUTTER_HOME}/bin"
+        CHROME_EXECUTABLE = "/usr/bin/google-chrome" // Adjust if necessary
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the repository
                 checkout scm
             }
         }
@@ -19,20 +18,72 @@ pipeline {
         stage('Increment Build Number') {
             steps {
                 script {
-                    // Extract current version and build number from pubspec.yaml
-                    def currentVersion = sh(
-                        script: "grep 'version:' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1",
-                        returnStdout: true
-                    ).trim()
-                    def currentBuild = sh(
-                        script: "grep 'version:' pubspec.yaml | cut -d '+' -f2",
-                        returnStdout: true
-                    ).trim()
-                    def newBuild = currentBuild.toInteger() + 1
+                    def version = sh(script: "grep version pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1", returnStdout: true).trim()
+                    def buildNumber = sh(script: "grep version pubspec.yaml | cut -d '+' -f2", returnStdout: true).trim()
+                    buildNumber = buildNumber.toInteger() + 1
+                    sh "sed -i 's/version: ${version}+${buildNumber - 1}/version: ${version}+${buildNumber}/' pubspec.yaml"
+                    echo "Updated version to ${version}+${buildNumber}"
+                }
+            }
+        }
 
-                    // Update pubspec.yaml with the new build number
-                    sh "sed -i 's/version: .*/version: ${currentVersion}+${newBuild}/' pubspec.yaml"
-                    echo "Updated version to ${currentVersion}+${newBuild}"
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Update package list and install required packages
+                    sh '''
+                        sudo apt-get update
+                        sudo apt-get install -y curl unzip wget git
+                    '''
+                }
+            }
+        }
+
+        stage('Install Android SDK') {
+            steps {
+                script {
+                    // Check if Android SDK is already installed
+                    if (!fileExists("${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager")) {
+                        echo "Installing Android SDK Command Line Tools..."
+                        sh '''
+                            mkdir -p ${ANDROID_HOME}/cmdline-tools
+                            wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
+                            unzip cmdline-tools.zip -d ${ANDROID_HOME}/cmdline-tools
+                            mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest
+                            rm cmdline-tools.zip
+                        '''
+                    } else {
+                        echo "Android SDK Command Line Tools already installed."
+                    }
+
+                    // Accept licenses and install required SDK components
+                    sh '''
+                        yes | sdkmanager --licenses
+                        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" "ndk;23.1.7779620" "extras;google;google_play_services"
+                    '''
+                }
+            }
+        }
+
+        stage('Install Other Dependencies') {
+            steps {
+                script {
+                    // Install Clang, CMake, Ninja, pkg-config, and Chrome
+                    sh '''
+                        sudo apt-get update
+                        sudo apt-get install -y clang cmake ninja-build pkg-config
+
+                        # Install Google Chrome if not installed
+                        if ! command -v google-chrome &> /dev/null
+                        then
+                            echo "Installing Google Chrome..."
+                            wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+                            sudo apt install -y ./google-chrome-stable_current_amd64.deb
+                            rm google-chrome-stable_current_amd64.deb
+                        else
+                            echo "Google Chrome already installed."
+                        fi
+                    '''
                 }
             }
         }
@@ -40,82 +91,60 @@ pipeline {
         stage('Install Flutter') {
             steps {
                 script {
-                    // Check if Flutter is already installed
-                    if (!fileExists(env.FLUTTER_HOME)) {
-                        echo "Flutter is not installed. Installing Flutter..."
-                        sh "git clone https://github.com/flutter/flutter.git -b stable ${env.FLUTTER_HOME}"
-                        echo "Flutter installed."
+                    if (!fileExists("${FLUTTER_HOME}/bin/flutter")) {
+                        echo "Installing Flutter..."
+                        sh '''
+                            git clone https://github.com/flutter/flutter.git -b stable ${FLUTTER_HOME}
+                        '''
                     } else {
                         echo "Flutter is already installed."
                     }
-
-                    // Initialize Flutter and download dependencies
-                    sh "${env.FLUTTER_HOME}/bin/flutter doctor -v"
+                    sh "${FLUTTER_HOME}/bin/flutter doctor -v"
                 }
             }
         }
 
         stage('Verify Flutter Installation') {
             steps {
+                sh "${FLUTTER_HOME}/bin/flutter --version"
+            }
+        }
+
+        stage('Configure Flutter for Android') {
+            steps {
                 script {
-                    // Verify that the flutter command is accessible
-                    sh "flutter --version"
+                    sh '''
+                        flutter config --android-sdk ${ANDROID_HOME}
+                        flutter doctor -v
+                    '''
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Flutter Dependencies') {
             steps {
-                // Get Flutter dependencies
-                sh "flutter pub get"
+                sh "${FLUTTER_HOME}/bin/flutter pub get"
             }
         }
 
         stage('Build APK') {
             steps {
-                // Build the APK in release mode
-                sh "flutter build apk --release"
+                sh "${FLUTTER_HOME}/bin/flutter build apk --release"
             }
         }
 
         stage('Archive APK') {
             steps {
-                // Archive the generated APK
                 archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
             }
         }
 
         stage('Deploy to Firebase') {
             steps {
-                script {
-                    // Retrieve SERVICE_CREDENTIALS from Jenkins credentials
-                    withCredentials([file(credentialsId: 'SERVICE_CREDENTIALS_ID', variable: 'SERVICE_CREDENTIALS_FILE')]) {
-                        // Save service credentials to a file
-                        sh "cp ${SERVICE_CREDENTIALS_FILE} service_credentials.json"
-                    }
-
-                    // Install Firebase CLI if not already installed
-                    sh """
-                    if ! command -v firebase &> /dev/null; then
-                        echo "Firebase CLI not found. Installing Firebase CLI..."
-                        curl -sL https://firebase.tools | bash
-                        echo "Firebase CLI installed."
-                    else
-                        echo "Firebase CLI is already installed."
-                    fi
-                    """
-
-                    // Authenticate with Firebase using the service account
-                    withEnv(["GOOGLE_APPLICATION_CREDENTIALS=service_credentials.json"]) {
-                        // Deploy the APK to Firebase App Distribution
-                        sh """
-                        firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
-                            --app YOUR_FIREBASE_APP_ID \
-                            --groups "kushalpokharel234@gmail.com" \
-                            --token ${env.FIREBASE_TOKEN}
-                        """
-                    }
-                }
+                // Add your Firebase deployment steps here
+                echo "Deploying to Firebase..."
+                // Example:
+                // sh 'firebase deploy --only hosting'
             }
         }
     }
@@ -123,8 +152,10 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            // Optional: Add cleanup steps if necessary
             sh 'rm -f service_credentials.json'
+        }
+        failure {
+            echo 'Build failed.'
         }
     }
 }
