@@ -1,42 +1,17 @@
 pipeline {
-    agent any 
-
-    environment {
-        FLUTTER_VERSION = '3.24.3'
-        JAVA_VERSION = '17' // Specify the required Java version
-        FIREBASE_APP_ID = credentials('FIREBASE_APP_ID') // Jenkins credential for Firebase App ID
-        SERVICE_CREDENTIALS = credentials('SERVICE_CREDENTIALS') // Jenkins credential for Firebase service account
-        TESTERS = 'kushalpokharel234@gmail.com' // Adjust as needed
-    }
+    agent any
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/klaw321/FlutterEcommercePlatform.git', branch: 'main'
+                checkout scm
             }
         }
-
-        stage('Set up JDK') {
-            steps {
-                script {
-                    sh "sudo apt-get update"
-                    sh "sudo apt-get install openjdk-${JAVA_VERSION}-jdk -y"
-                    sh "java -version"
-                }
-            }
-        }
-
-        stage('Archive APK') {
-            steps {
-                // Ensure artifacts are archived within a node block
-                archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
-            }
-        }
-
 
         stage('Increment Build Number') {
             steps {
                 script {
+                    // Incrementing build number in pubspec.yaml
                     def currentVersion = sh(script: "grep 'version:' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1", returnStdout: true).trim()
                     def currentBuild = sh(script: "grep 'version:' pubspec.yaml | cut -d '+' -f2", returnStdout: true).trim()
                     def newBuild = currentBuild.toInteger() + 1
@@ -49,38 +24,46 @@ pipeline {
 
         stage('Install Flutter') {
             steps {
-                sh "wget https://storage.googleapis.com/download/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-                sh "tar xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-                sh "export PATH=\$PATH:\$PWD/flutter/bin"
-                sh "flutter doctor"
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh "flutter pub get"
+                script {
+                    // Ensure Flutter is installed
+                    sh "flutter pub get"
+                }
             }
         }
 
         stage('Build APK') {
             steps {
-                sh "flutter build apk --release"
+                script {
+                    // Build the APK
+                    sh "flutter build apk --release"
+                }
             }
         }
 
-        stage('Upload APK to Firebase Distribution') {
+        stage('Archive APK') {
+            steps {
+                // Ensure artifacts are archived within a node block
+                script {
+                    archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
+                }
+            }
+        }
+
+        stage('Deploy to Firebase') {
             steps {
                 script {
-                    // Creating the temporary service account file
-                    def serviceAccountFile = "${WORKSPACE}/service_account.json"
-                    writeFile file: serviceAccountFile, text: "${SERVICE_CREDENTIALS}"
+                    // Ensure SERVICE_CREDENTIALS is set correctly
+                    def serviceCredentials = "${env.SERVICE_CREDENTIALS}"
+                    if (!serviceCredentials) {
+                        error "SERVICE_CREDENTIALS is not set"
+                    }
 
+                    // Upload APK to Firebase
                     sh """
-                    curl -X POST -H "Authorization: Bearer \$(gcloud auth print-access-token)" \
-                    -F "file=@build/app/outputs/flutter-apk/app-release.apk" \
-                    -F "appId=${FIREBASE_APP_ID}" \
-                    -F "testers=${TESTERS}" \
-                    "https://firebaseappdistribution.googleapis.com/v1alpha/apps/${FIREBASE_APP_ID}/releases"
+                    curl -X POST -H "Authorization: Bearer \${{ secrets.FIREBASE_APP_ID }}" \
+                        -F "file=@build/app/outputs/flutter-apk/app-release.apk" \
+                        -F "testers=kushalpokharel234@gmail.com" \
+                        https://firebaseappdistribution.googleapis.com/v1/projects/YOUR_PROJECT_ID/apps/YOUR_APP_ID/releases:upload
                     """
                 }
             }
@@ -89,13 +72,9 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', allowEmptyArchive: true
-        }
-        success {
-            echo 'Successfully built and uploaded the APK to Firebase Distribution.'
-        }
-        failure {
-            echo 'There was an error in the pipeline.'
+            // Optional: Clean up actions, notifications, etc.
+            echo 'Cleaning up...'
         }
     }
 }
+
