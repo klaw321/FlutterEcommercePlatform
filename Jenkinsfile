@@ -29,16 +29,17 @@ pipeline {
                     sh """
                     if ! command -v flutter &> /dev/null; then
                         echo "Flutter is not installed. Installing Flutter..."
-                        git clone https://github.com/flutter/flutter.git -b stable ~/flutter
-                        export PATH="$PATH:~/flutter/bin"
+                        git clone https://github.com/flutter/flutter.git -b stable /var/jenkins_home/flutter
                         echo "Flutter installed."
                     else
                         echo "Flutter is already installed."
                     fi
                     """
+
+                    // Ensure flutter is available in the environment
+                    env.PATH = "${env.PATH}:/var/jenkins_home/flutter/bin"
                 }
-                // Ensure flutter is available in the environment
-                sh "export PATH=\"\$PATH:~/flutter/bin\""
+                
                 // Install dependencies
                 sh "flutter pub get"
             }
