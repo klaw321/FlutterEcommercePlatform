@@ -18,10 +18,27 @@ pipeline {
         stage('Increment Build Number') {
             steps {
                 script {
-                    def version = sh(script: "grep version pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1", returnStdout: true).trim()
-                    def buildNumber = sh(script: "grep version pubspec.yaml | cut -d '+' -f2", returnStdout: true).trim()
-                    buildNumber = buildNumber.toInteger() + 1
-                    sh "sed -i 's/version: ${version}+${buildNumber - 1}/version: ${version}+${buildNumber}/' pubspec.yaml"
+                    // Extract the version line that starts with 'version:'
+                    def versionLine = sh(script: "grep '^version:' pubspec.yaml", returnStdout: true).trim()
+                    
+                    // Debugging: Print the extracted version line
+                    echo "Extracted version line: ${versionLine}"
+
+                    // Split the version line to get version and build number
+                    def versionParts = versionLine.split(':')[1].trim().split('\\+')
+                    
+                    if (versionParts.length != 2) {
+                        error "Invalid version format in pubspec.yaml. Expected format: version: x.y.z+buildNumber"
+                    }
+                    
+                    def version = versionParts[0]
+                    def buildNumber = versionParts[1].toInteger() + 1
+                    
+                    // Update the pubspec.yaml with the new build number
+                    sh """
+                        sed -i 's/version: ${version}+${buildNumber - 1}/version: ${version}+${buildNumber}/' pubspec.yaml
+                    """
+                    
                     echo "Updated version to ${version}+${buildNumber}"
                 }
             }
