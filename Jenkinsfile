@@ -4,7 +4,8 @@ pipeline {
     environment {
         ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
         FLUTTER_VERSION = '3.24.3'  // Set your Flutter version
-        PATH = "${WORKSPACE}/flutter/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${env.PATH}"  // Add Android SDK and Flutter to PATH for all stages
+        FLUTTER_HOME = "${WORKSPACE}/flutter"  // Define Flutter home directory
+        PATH = "${FLUTTER_HOME}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${env.PATH}"  // Add Android SDK and Flutter to PATH for all stages
     }
 
     stages {
@@ -67,8 +68,8 @@ pipeline {
                     echo "Installing Flutter ${FLUTTER_VERSION}..."
                     sh '''
                         wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
-                        tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
-                        mv flutter ${WORKSPACE}/flutter  # Ensure flutter is in the workspace directory
+                        tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz -C ${WORKSPACE}
+                        # No need to move the flutter directory; we set FLUTTER_HOME instead.
                     '''
                 }
             }
