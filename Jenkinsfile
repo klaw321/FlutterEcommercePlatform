@@ -49,8 +49,8 @@ pipeline {
                 script {
                     // Update package list and install required packages
                     sh '''
-                         sudo apt-get update
-                         sudo apt-get install -y curl unzip wget git
+                          apt-get update
+                          apt-get install -y curl unzip wget git
                     '''
                 }
             }
