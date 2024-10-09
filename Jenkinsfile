@@ -48,7 +48,7 @@ pipeline {
             }
         }
 
-        stages {
+        
         stage('Install Android SDK') {
             steps {
                 script {
@@ -86,7 +86,7 @@ pipeline {
                 sh 'sdkmanager --list'
             }
         }
-    }
+    
 
         stage('Install Flutter') {
             steps {
