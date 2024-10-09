@@ -91,8 +91,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        export ANDROID_HOME=${ANDROID_HOME}  // Set the environment variable directly
-                        export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}  // Set the environment variable directly
+                        export ANDROID_HOME=${ANDROID_HOME}
+                        export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}
                         flutter pub get
                     '''
                 }
@@ -104,8 +104,8 @@ pipeline {
                 script {
                     echo 'Building APK...'
                     sh '''
-                        export ANDROID_HOME=${ANDROID_HOME}  // Set the environment variable directly
-                        export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}  // Set the environment variable directly
+                        export ANDROID_HOME=${ANDROID_HOME}
+                        export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}
                         flutter build apk --release
                     '''
                 }
