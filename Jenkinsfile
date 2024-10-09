@@ -37,6 +37,14 @@ pipeline {
             }
         }
 
+        stage('Install Git Safe Directory') {
+            steps {
+                script {
+                    sh "git config --global --add safe.directory ${WORKSPACE}/flutter"  // Mark the flutter directory as safe
+                }
+            }
+        }
+
         stage('Install Android SDK') {
             steps {
                 script {
@@ -110,3 +118,4 @@ pipeline {
         }
     }
 }
+
