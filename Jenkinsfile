@@ -15,20 +15,12 @@ pipeline {
             }
         }
 
-        stage('Increment Build Number') {
+          stage('Increment Build Number') {
             steps {
                 script {
-                    // Extract the current version line from pubspec.yaml
                     def versionLine = sh(script: "grep ^version: pubspec.yaml", returnStdout: true).trim()
                     echo "Extracted version line: ${versionLine}"
-                    
-                    // Increment the build number (assuming format: x.y.z+build)
-                    def newVersion = versionLine.replaceAll(/(\+\d+)$/, { fullMatch, p1 -> 
-                        def buildNumber = p1[1..-1].toInteger()
-                        return "+${buildNumber + 1}"
-                    })
-                    
-                    // Update pubspec.yaml with the new version
+                    def newVersion = versionLine.replace('+1', '+2')
                     sh "sed -i 's/${versionLine}/${newVersion}/' pubspec.yaml"
                     echo "Updated version to ${newVersion}"
                 }
