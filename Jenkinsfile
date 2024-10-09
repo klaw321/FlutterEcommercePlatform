@@ -48,31 +48,40 @@ pipeline {
         }
 
         stage('Install Android SDK') {
-            steps {
-                script {
-                    echo 'Installing Android SDK Command Line Tools...'
-                    sh '''
-                        # Define variables for better readability
-                        SDK_ROOT="${ANDROID_SDK_ROOT}"
-                        CMDLINE_TOOLS_DIR="${SDK_ROOT}/cmdline-tools"
-                        LATEST_DIR="${CMDLINE_TOOLS_DIR}/latest"
-                       
-
-                        # Create necessary directories
-                        mkdir -p "${LATEST_DIR}"
-
-                        # Download the Command Line Tools ZIP
-                        wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
-
-
-
-                 
-                        # Ensure sdkmanager is executable
-                        chmod +x "${LATEST_DIR}/bin/sdkmanager"
-                    '''
-                }
-            }
-        }
+    steps {
+        sh '''
+            set -e
+            echo "Downloading Android SDK Command-line Tools..."
+            wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O cmdline-tools.zip
+            
+            echo "Extracting cmdline-tools.zip..."
+            unzip -o cmdline-tools.zip -d /var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/temp
+            
+            CMDLINE_DIR="/var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/temp/cmdline-tools"
+            LATEST_DIR="/var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/latest"
+            
+            if [ -d "$CMDLINE_DIR" ]; then
+                echo "Extraction successful. Preparing to move cmdline-tools."
+                
+                if [ -d "$LATEST_DIR" ]; then
+                    echo "'latest' directory exists. Removing it for a clean installation."
+                    rm -rf "$LATEST_DIR"
+                fi
+                
+                echo "Moving cmdline-tools to 'latest' directory."
+                mv "$CMDLINE_DIR" "$LATEST_DIR"
+                echo "Android SDK Command-line Tools installed successfully."
+            else
+                echo "Extraction failed. 'cmdline-tools' directory not found."
+                exit 1
+            fi
+            
+            echo "Cleaning up temporary files."
+            rm -rf /var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/temp
+            rm -f cmdline-tools.zip
+        '''
+    }
+}
 
         stage('Install Android SDK Components') {
             steps {
