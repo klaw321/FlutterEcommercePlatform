@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
+        FLUTTER_VERSION = '3.24.3'  // Set your Flutter version
     }
 
     stages {
@@ -49,7 +50,52 @@ pipeline {
             }
         }
 
-        // ... (other stages)
+        stage('Install Flutter') {
+            steps {
+                script {
+                    echo "Installing Flutter ${FLUTTER_VERSION}..."
+                    sh '''
+                        wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
+                        tar xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
+                        export PATH="$PATH:${WORKSPACE}/flutter/bin"
+                    '''
+                }
+            }
+        }
+
+        stage('Install Flutter Dependencies') {
+            steps {
+                script {
+                    sh 'flutter pub get'
+                }
+            }
+        }
+
+        stage('Build APK') {
+            steps {
+                script {
+                    echo 'Building APK...'
+                    sh 'flutter build apk --release'
+                }
+            }
+        }
+
+        stage('Upload APK to Firebase') {
+            steps {
+                script {
+                    echo 'Uploading APK to Firebase...'
+                    withCredentials([file(credentialsId: 'firebase-service-credentials', variable: 'FIREBASE_CREDENTIALS')]) {
+                        sh '''
+                            export FIREBASE_TOKEN=$(cat ${FIREBASE_CREDENTIALS})
+                            firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+                                --app $FIREBASE_APP_ID \
+                                --token $FIREBASE_TOKEN \
+                                --groups testers
+                        '''
+                    }
+                }
+            }
+        }
     }
 
     post {
