@@ -81,5 +81,81 @@ pipeline {
                 }
             }
         }
+   stage('Setup Flutter') {
+            steps {
+                script {
+                    echo 'Setting up Flutter...'
+                    sh '''
+                        # Ensure Flutter is in PATH
+                        export PATH="${WORKSPACE}/flutter/bin:${PATH}"
+
+                        # Run flutter doctor to perform initial setup
+                        flutter doctor
+
+                        # Configure Flutter to use the Android SDK
+                        flutter config --android-sdk ${ANDROID_SDK_ROOT}
+
+                        # Optionally, enable web support if needed
+                        flutter config --enable-web
+                    '''
+                }
+            }
+        }
+
+        stage('Install Flutter Dependencies') {
+            steps {
+                script {
+                    echo 'Installing Flutter dependencies...'
+                    sh 'flutter pub get'
+                }
+            }
+        }
+
+        stage('Build APK') {
+            steps {
+                script {
+                    echo 'Building APK...'
+                    sh '''
+                        # Ensure Flutter and Android SDK tools are in PATH
+                        export PATH="${WORKSPACE}/flutter/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${PATH}"
+
+                        # Build the APK in release mode
+                        flutter build apk --release
+                    '''
+                }
+            }
+        }
+
+        stage('Upload APK to Firebase') {
+            steps {
+                script {
+                    echo 'Uploading APK to Firebase...'
+                    withCredentials([file(credentialsId: 'firebase-service-credentials', variable: 'FIREBASE_CREDENTIALS')]) {
+                        sh '''
+                            # Export Firebase token from the credentials file
+                            export FIREBASE_TOKEN=$(cat ${FIREBASE_CREDENTIALS})
+
+                            # Upload the APK to Firebase App Distribution
+                            firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+                                --app $FIREBASE_APP_ID \
+                                --token $FIREBASE_TOKEN \
+                                --groups testers
+                        '''
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+            sh 'rm -f service_credentials.json'
+            script {
+                if (currentBuild.currentResult == 'FAILURE') {
+                    echo 'Build failed.'
+                }
+            }
+        }
     }
 }
