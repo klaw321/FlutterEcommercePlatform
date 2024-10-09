@@ -44,18 +44,7 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    // Update package list and install required packages
-                    sh '''
-                          sudo apt-get update
-                          sudo apt-get install -y curl unzip wget git
-                    '''
-                }
-            }
-        }
-
+    
         stage('Install Android SDK') {
             steps {
                 script {
