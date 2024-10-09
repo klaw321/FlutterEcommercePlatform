@@ -56,7 +56,7 @@ pipeline {
                         SDK_ROOT="${ANDROID_SDK_ROOT}"
                         CMDLINE_TOOLS_DIR="${SDK_ROOT}/cmdline-tools"
                         LATEST_DIR="${CMDLINE_TOOLS_DIR}/latest"
-                        TEMP_DIR="${CMDLINE_TOOLS_DIR}/temp"
+                       
 
                         # Create necessary directories
                         mkdir -p "${LATEST_DIR}"
@@ -64,22 +64,9 @@ pipeline {
                         # Download the Command Line Tools ZIP
                         wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
 
-                        # Unzip the Command Line Tools into a temporary directory
-                        unzip -o cmdline-tools.zip -d "${TEMP_DIR}"
 
-                        # Check if the extracted folder contains 'cmdline-tools'
-                        if [ -d "${TEMP_DIR}/cmdline-tools" ]; then
-                            # Move all contents from temp/cmdline-tools to latest/
-                            mv "${TEMP_DIR}/cmdline-tools/"* "${LATEST_DIR}/"
-                        else
-                            # If 'cmdline-tools' folder does not exist, move all temp contents to latest/
-                            mv "${TEMP_DIR}/"* "${LATEST_DIR}/"
-                        fi
 
-                        # Clean up temporary files and directories
-                        rm -rf "${TEMP_DIR}"
-                        rm cmdline-tools.zip
-
+                 
                         # Ensure sdkmanager is executable
                         chmod +x "${LATEST_DIR}/bin/sdkmanager"
                     '''
