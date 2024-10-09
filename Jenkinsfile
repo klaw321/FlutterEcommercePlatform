@@ -45,19 +45,31 @@ pipeline {
             }
         }
 
-        stage('Install Android SDK') {
-            steps {
-                script {
-                    echo 'Installing Android SDK Command Line Tools...'
-                    sh '''
-                        mkdir -p "${ANDROID_SDK_ROOT}/cmdline-tools"
-                        wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
-                        unzip -o cmdline-tools.zip -d "${ANDROID_SDK_ROOT}/cmdline-tools"
-                        rm cmdline-tools.zip
-                    '''
-                }
-            }
+   stage('Install Android SDK') {
+    steps {
+        script {
+            echo 'Installing Android SDK Command Line Tools...'
+            sh '''
+                # Create the cmdline-tools directory and the latest folder
+                mkdir -p "${ANDROID_SDK_ROOT}/cmdline-tools/latest"
+
+                # Download the Command Line Tools
+                wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
+
+                # Unzip the Command Line Tools into a temporary directory
+                unzip -o cmdline-tools.zip -d "${ANDROID_SDK_ROOT}/cmdline-tools/temp"
+
+                # Move the extracted content to the latest directory
+                mv "${ANDROID_SDK_ROOT}/cmdline-tools/temp/cmdline-tools/"* "${ANDROID_SDK_ROOT}/cmdline-tools/latest/"
+
+                # Clean up temporary files
+                rm -rf "${ANDROID_SDK_ROOT}/cmdline-tools/temp"
+                rm cmdline-tools.zip
+            '''
         }
+    }
+}
+
 
         stage('Install Flutter') {
             steps {
