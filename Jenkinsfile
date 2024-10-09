@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
         FLUTTER_VERSION = '3.24.3'  // Set your Flutter version
+        ANDROID_HOME = "${WORKSPACE}/Android/Sdk"  // Define Android SDK home directory
+        ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk" // Ensure ANDROID_SDK_ROOT is set
         FLUTTER_HOME = "${WORKSPACE}/flutter"  // Define Flutter home directory
-        PATH = "${FLUTTER_HOME}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${env.PATH}"  // Add Android SDK and Flutter to PATH for all stages
+        PATH = "${FLUTTER_HOME}/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${env.PATH}"  // Add Android SDK and Flutter to PATH
     }
 
     stages {
@@ -51,11 +52,11 @@ pipeline {
                 script {
                     echo 'Installing Android SDK Command Line Tools...'
                     sh '''
-                        mkdir -p "${ANDROID_SDK_ROOT}/cmdline-tools/latest"
+                        mkdir -p "${ANDROID_HOME}/cmdline-tools/latest"
                         wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
-                        unzip -o cmdline-tools.zip -d "${ANDROID_SDK_ROOT}/cmdline-tools/temp"
-                        mv "${ANDROID_SDK_ROOT}/cmdline-tools/temp/cmdline-tools/"* "${ANDROID_SDK_ROOT}/cmdline-tools/latest/"
-                        rm -rf "${ANDROID_SDK_ROOT}/cmdline-tools/temp"
+                        unzip -o cmdline-tools.zip -d "${ANDROID_HOME}/cmdline-tools/temp"
+                        mv "${ANDROID_HOME}/cmdline-tools/temp/cmdline-tools/"* "${ANDROID_HOME}/cmdline-tools/latest/"
+                        rm -rf "${ANDROID_HOME}/cmdline-tools/temp"
                         rm cmdline-tools.zip
                     '''
                 }
@@ -69,7 +70,6 @@ pipeline {
                     sh '''
                         wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                         tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz -C ${WORKSPACE}
-                        # No need to move the flutter directory; we set FLUTTER_HOME instead.
                     '''
                 }
             }
@@ -80,7 +80,7 @@ pipeline {
                 script {
                     echo "Setting up Flutter..."
                     sh '''
-                        flutter config --android-sdk ${ANDROID_SDK_ROOT}
+                        flutter config --android-sdk ${ANDROID_HOME}
                         flutter config --enable-web
                     '''
                 }
