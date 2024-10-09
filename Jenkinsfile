@@ -4,6 +4,7 @@ pipeline {
     environment {
         ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
         FLUTTER_VERSION = '3.24.3'  // Set your Flutter version
+        PATH = "${WORKSPACE}/flutter/bin:${env.PATH}"  // Add Flutter to PATH for all stages
     }
 
     stages {
@@ -56,8 +57,7 @@ pipeline {
                     echo "Installing Flutter ${FLUTTER_VERSION}..."
                     sh '''
                         wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
-                        tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz  # This will work now
-                        export PATH="$PATH:${WORKSPACE}/flutter/bin"
+                        tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                     '''
                 }
             }
