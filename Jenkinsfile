@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        FLUTTER_VERSION = '3.24.3'  // Set your Flutter version
-        ANDROID_HOME = "${WORKSPACE}/Android/Sdk"  // Define Android SDK home directory
-        ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk" // Ensure ANDROID_SDK_ROOT is set
-        FLUTTER_HOME = "${WORKSPACE}/flutter"  // Define Flutter home directory
-        PATH = "${FLUTTER_HOME}/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${env.PATH}"  // Add Android SDK and Flutter to PATH
+        FLUTTER_VERSION = '3.24.3'
+        ANDROID_HOME = "${WORKSPACE}/Android/Sdk"
+        ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
+        FLUTTER_HOME = "${WORKSPACE}/flutter"
+        PATH = "${FLUTTER_HOME}/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${env.PATH}"
     }
 
     stages {
@@ -42,7 +42,7 @@ pipeline {
         stage('Install Git Safe Directory') {
             steps {
                 script {
-                    sh "git config --global --add safe.directory ${WORKSPACE}/flutter"  // Mark the flutter directory as safe
+                    sh "git config --global --add safe.directory ${WORKSPACE}/flutter"
                 }
             }
         }
@@ -90,7 +90,11 @@ pipeline {
         stage('Install Flutter Dependencies') {
             steps {
                 script {
-                    sh 'flutter pub get'
+                    sh '''
+                        export ANDROID_HOME=${ANDROID_HOME}  // Set the environment variable directly
+                        export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}  // Set the environment variable directly
+                        flutter pub get
+                    '''
                 }
             }
         }
@@ -99,7 +103,11 @@ pipeline {
             steps {
                 script {
                     echo 'Building APK...'
-                    sh 'flutter build apk --release'
+                    sh '''
+                        export ANDROID_HOME=${ANDROID_HOME}  // Set the environment variable directly
+                        export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}  // Set the environment variable directly
+                        flutter build apk --release
+                    '''
                 }
             }
         }
