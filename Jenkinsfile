@@ -43,7 +43,7 @@ pipeline {
                     sh '''
                         mkdir -p "${ANDROID_SDK_ROOT}/cmdline-tools"
                         wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
-                        unzip cmdline-tools.zip -d "${ANDROID_SDK_ROOT}/cmdline-tools"
+                        unzip -o cmdline-tools.zip -d "${ANDROID_SDK_ROOT}/cmdline-tools"
                         rm cmdline-tools.zip
                     '''
                 }
