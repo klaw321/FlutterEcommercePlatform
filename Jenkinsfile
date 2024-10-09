@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
-        ANDROID_HOME = "${ANDROID_SDK_ROOT}"
+       ANDROID_HOME = "${env.WORKSPACE}/android-sdk"
+        PATH = "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+        ANDROID_SDK_ROOT = "$ANDROID_HOME"
         FLUTTER_VERSION = '3.24.3'  // Set your desired Flutter version
         PATH = "${WORKSPACE}/flutter/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${env.PATH}"  // Add Flutter and Android SDK to PATH for all stages
     }
@@ -47,70 +48,45 @@ pipeline {
             }
         }
 
+        stages {
         stage('Install Android SDK') {
-    steps {
-        sh '''
-            set -e
-            echo "Downloading Android SDK Command-line Tools..."
-            wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O cmdline-tools.zip
-            
-            echo "Extracting cmdline-tools.zip..."
-            unzip -o cmdline-tools.zip -d /var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/temp
-            
-            CMDLINE_DIR="/var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/temp/cmdline-tools"
-            LATEST_DIR="/var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/latest"
-            
-            if [ -d "$CMDLINE_DIR" ]; then
-                echo "Extraction successful. Preparing to move cmdline-tools."
-                
-                if [ -d "$LATEST_DIR" ]; then
-                    echo "'latest' directory exists. Removing it for a clean installation."
-                    rm -rf "$LATEST_DIR"
-                fi
-                
-                echo "Moving cmdline-tools to 'latest' directory."
-                mv "$CMDLINE_DIR" "$LATEST_DIR"
-                echo "Android SDK Command-line Tools installed successfully."
-            else
-                echo "Extraction failed. 'cmdline-tools' directory not found."
-                exit 1
-            fi
-            
-            echo "Cleaning up temporary files."
-            rm -rf /var/jenkins_home/workspace/flutterapkbuild/Android/Sdk/cmdline-tools/temp
-            rm -f cmdline-tools.zip
-        '''
-    }
-}
-
-        stage('Install Android SDK Components') {
             steps {
                 script {
-                    echo 'Installing Android SDK components...'
-                    sh '''
-                        # Define variables for better readability
-                        SDK_ROOT="${ANDROID_SDK_ROOT}"
-                        CMDLINE_TOOLS_BIN="${SDK_ROOT}/cmdline-tools/latest/bin"
-                        PLATFORM_TOOLS="${SDK_ROOT}/platform-tools"
+                    // Define Android SDK URL and the installation directory
+                    def androidSdkUrl = 'https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip'
+                    def sdkDir = "${env.WORKSPACE}/android-sdk"
+                    def toolsDir = "${sdkDir}/cmdline-tools/latest"
+                    
+                    // Create SDK directory
+                    sh "mkdir -p ${sdkDir}/cmdline-tools"
 
-                        # Add cmdline-tools/latest/bin and platform-tools to PATH
-                        export PATH="${CMDLINE_TOOLS_BIN}:${PLATFORM_TOOLS}:${PATH}"
+                    // Download the Android SDK command-line tools
+                    sh "curl -o commandlinetools.zip ${androidSdkUrl}"
 
-                        # Update sdkmanager to ensure it's the latest version
-                        sdkmanager --update
+                    // Unzip and set up the SDK
+                    sh "unzip commandlinetools.zip -d ${sdkDir}/cmdline-tools"
 
-                        # Accept all Android SDK licenses
-                        yes | sdkmanager --licenses
+                    // Move the unzipped files to the 'latest' folder
+                    sh "mv ${sdkDir}/cmdline-tools/cmdline-tools ${toolsDir}"
 
-                        # Install essential SDK components
-                        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-
-                        # (Optional) Install additional SDK components as needed
-                        # sdkmanager "extras;android;m2repository" "extras;google;m2repository"
-                    '''
+                    // Install required SDK packages
+                    sh """
+                        yes | sdkmanager --sdk_root=${sdkDir} --licenses
+                        yes | sdkmanager --sdk_root=${sdkDir} "platform-tools" "platforms;android-33" "build-tools;33.0.0"
+                    """
                 }
             }
         }
+
+        stage('Verify SDK Installation') {
+            steps {
+                // Check SDK installation and print Android SDK tools version
+                sh 'sdkmanager --version'
+                sh 'adb --version'
+                sh 'sdkmanager --list'
+            }
+        }
+    }
 
         stage('Install Flutter') {
             steps {
