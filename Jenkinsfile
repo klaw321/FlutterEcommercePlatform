@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
+        FLUTTER_VERSION = '3.24.3'
        
     }
 
