@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
-        FLUTTER_VERSION = '3.24.3'  // Set your Flutter version
+       
     }
 
     stages {
