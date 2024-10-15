@@ -16,13 +16,19 @@ pipeline {
         stage('Increment Build Number') {
             steps {
                 script {
-                    def versionLine = sh(script: "grep ^version: pubspec.yaml", returnStdout: true).trim()
-                    echo "Extracted version line: ${versionLine}"
-                    def newVersion = versionLine.replace('+1', '+2')
-                    sh "sed -i 's/${versionLine}/${newVersion}/' pubspec.yaml"
-                    echo "Updated version to ${newVersion}"
+                    // Read the current version and build number
+                    def currentVersion = sh(script: "grep 'version:' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1", returnStdout: true).trim()
+                    def currentBuild = sh(script: "grep 'version:' pubspec.yaml | cut -d '+' -f2", returnStdout: true).trim()
+                    def newBuild = currentBuild.toInteger() + 1
+
+                    // Update pubspec.yaml with the new build number
+                    sh "sed -i 's/version: .*/version: ${currentVersion}+${newBuild}/' pubspec.yaml"
+
+                    // Output the new version for logging
+                    echo "Updated version to ${currentVersion}+${newBuild}"
                 }
             }
+        }
         }
         stage('Install Dependencies') {
             steps {
