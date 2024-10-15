@@ -5,7 +5,8 @@ pipeline {
         ANDROID_HOME = "${WORKSPACE}/Android/Sdk"
         ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
         FLUTTER_HOME = "${WORKSPACE}/flutter"
-        PATH = "${FLUTTER_HOME}/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${env.PATH}"
+        // Update PATH to include cmdline-tools/tools/bin
+        PATH = "${FLUTTER_HOME}/bin:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/platform-tools:${env.PATH}"
     }
     stages {
         stage('Checkout SCM') {
@@ -52,6 +53,9 @@ pipeline {
                         mv "${ANDROID_HOME}/cmdline-tools/temp/cmdline-tools/"* "${ANDROID_HOME}/cmdline-tools/latest/"
                         rm -rf "${ANDROID_HOME}/cmdline-tools/temp"
                         rm cmdline-tools.zip
+                        # Create a symbolic link from latest to tools
+                        mkdir -p "${ANDROID_HOME}/cmdline-tools/tools"
+                        ln -sfn "${ANDROID_HOME}/cmdline-tools/latest" "${ANDROID_HOME}/cmdline-tools/tools"
                     '''
                 }
             }
@@ -61,6 +65,8 @@ pipeline {
                 script {
                     sh '''
                         sdkmanager --install "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+                        # Accept all SDK licenses
+                        yes | sdkmanager --licenses
                     '''
                 }
             }
@@ -72,6 +78,7 @@ pipeline {
                     sh '''
                         wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                         tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz -C ${WORKSPACE}
+                        rm flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                     '''
                 }
             }
