@@ -13,24 +13,27 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Increment Build Number') {
-            steps {
-                script {
-                    def versionLine = sh(script: "grep ^version: pubspec.yaml", returnStdout: true).trim()
-                    echo "Extracted version line: ${versionLine}"
-                    def newVersion = versionLine.replace('+1', '+2')
-                    sh "sed -i 's/${versionLine}/${newVersion}/' pubspec.yaml"
-                    echo "Updated version to ${newVersion}"
-                }
-            }
-        }
         stage('Install Dependencies') {
             steps {
                 script {
-                    sh '''
-                        sudo apt-get update
-                        sudo apt-get install -y curl unzip wget git xz-utils clang cmake ninja-build pkg-config libgtk-3-dev
-                    '''
+                    retry(3) { // Retry up to 3 times
+                        try {
+                            sh '''
+                                #!/bin/bash
+                                # Wait for any existing apt processes to finish
+                                while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+                                    echo "Waiting for other apt-get processes to finish..."
+                                    sleep 5
+                                done
+                                sudo apt-get update
+                                sudo apt-get install -y curl unzip wget git xz-utils clang cmake ninja-build pkg-config libgtk-3-dev
+                            '''
+                        } catch (Exception e) {
+                            echo "Failed to install dependencies. Retrying..."
+                            sleep 10
+                            throw e // Trigger retry
+                        }
+                    }
                 }
             }
         }
@@ -69,6 +72,19 @@ pipeline {
                 }
             }
         }
+
+        stage('Verify Android SDK Installation') {
+             steps {
+                 script {
+            sh '''
+                ls -la ${ANDROID_HOME}/cmdline-tools/latest/bin
+                ls -la ${ANDROID_HOME}/platform-tools
+                ls -la ${ANDROID_HOME}/build-tools/33.0.0
+            '''
+        }
+    }
+}
+
         stage('Install Flutter') {
             steps {
                 script {
@@ -81,18 +97,6 @@ pipeline {
                 }
             }
         }
-        stage('Verify Android SDK Installation') {
-            steps {
-                script {
-                    sh '''
-                          ls -la ${ANDROID_HOME}/cmdline-tools/latest/bin
-                          ls -la ${ANDROID_HOME}/platform-tools
-                          ls -la ${ANDROID_HOME}/build-tools/33.0.0
-                       '''
-                        }
-    }
-}
-
         stage('Setup Flutter') {
             steps {
                 script {
@@ -114,6 +118,8 @@ pipeline {
                 }
             }
         }
+
+        
         stage('Check Flutter Doctor') {
             steps {
                 script {
