@@ -64,24 +64,17 @@ pipeline {
             steps {
                 script {
                     sh '''
-                export PATH=${ANDROID_HOME}/cmdline-tools/latest/bin:$PATH
-                
-                # Update SDK Manager
-                sdkmanager --update
-                
-                # Accept all SDK licenses
-                yes | sdkmanager --licenses
-                
-                # Install necessary components, excluding system images for now
-                sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-                
-                # Install system image separately if needed later
-                sdkmanager "system-images;android-33;google_apis;x86_64" || echo "Failed to install system image, skipping."
-            '''
+                        export PATH=${ANDROID_HOME}/cmdline-tools/latest/bin:$PATH
+                        sdkmanager --update
+                        yes | sdkmanager --licenses
+                        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" "platforms;android-33" "system-images;android-33;google_apis;x86_64"
+                    '''
+                }
+            }
         }
-    }
-}
 
+        
+ 
         stage('Verify Android SDK Installation') {
             steps {
                 script {
