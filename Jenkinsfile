@@ -13,22 +13,7 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Increment Build Number') {
-            steps {
-                script {
-                    // Read the current version and build number
-                    def currentVersion = sh(script: "grep 'version:' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1", returnStdout: true).trim()
-                    def currentBuild = sh(script: "grep 'version:' pubspec.yaml | cut -d '+' -f2", returnStdout: true).trim()
-                    def newBuild = currentBuild.toInteger() + 1
-
-                    // Update pubspec.yaml with the new build number
-                    sh "sed -i 's/version: .*/version: ${currentVersion}+${newBuild}/' pubspec.yaml"
-
-                    // Output the new version for logging
-                    echo "Updated version to ${currentVersion}+${newBuild}"
-                }
-            }
-        }
+        
         stage('Install Dependencies') {
             steps {
                 script {
@@ -144,6 +129,22 @@ pipeline {
                     sh '''
                         flutter doctor -v
                     '''
+                }
+            }
+        }
+        stage('Increment Build Number') {
+            steps {
+                script {
+                    // Read the current version and build number
+                    def currentVersion = sh(script: "grep 'version:' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1", returnStdout: true).trim()
+                    def currentBuild = sh(script: "grep 'version:' pubspec.yaml | cut -d '+' -f2", returnStdout: true).trim()
+                    def newBuild = currentBuild.toInteger() + 1
+
+                    // Update pubspec.yaml with the new build number
+                    sh "sed -i 's/version: .*/version: ${currentVersion}+${newBuild}/' pubspec.yaml"
+
+                    // Output the new version for logging
+                    echo "Updated version to ${currentVersion}+${newBuild}"
                 }
             }
         }
