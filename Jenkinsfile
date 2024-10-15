@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        FLUTTER_VERSION = '3.24.3'
+        FLUTTER_VERSION = '3.24.3' // Update as needed
         ANDROID_HOME = "${WORKSPACE}/Android/Sdk"
         ANDROID_SDK_ROOT = "${WORKSPACE}/Android/Sdk"
         FLUTTER_HOME = "${WORKSPACE}/flutter"
@@ -11,6 +11,17 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 checkout scm
+            }
+        }
+        stage('Increment Build Number') {
+            steps {
+                script {
+                    def versionLine = sh(script: "grep ^version: pubspec.yaml", returnStdout: true).trim()
+                    echo "Extracted version line: ${versionLine}"
+                    def newVersion = versionLine.replace('+1', '+2')
+                    sh "sed -i 's/${versionLine}/${newVersion}/' pubspec.yaml"
+                    echo "Updated version to ${newVersion}"
+                }
             }
         }
         stage('Install Dependencies') {
@@ -72,19 +83,17 @@ pipeline {
                 }
             }
         }
-
         stage('Verify Android SDK Installation') {
-             steps {
-                 script {
-            sh '''
-                ls -la ${ANDROID_HOME}/cmdline-tools/latest/bin
-                ls -la ${ANDROID_HOME}/platform-tools
-                ls -la ${ANDROID_HOME}/build-tools/33.0.0
-            '''
+            steps {
+                script {
+                    sh '''
+                        ls -la ${ANDROID_HOME}/cmdline-tools/latest/bin
+                        ls -la ${ANDROID_HOME}/platform-tools
+                        ls -la ${ANDROID_HOME}/build-tools/33.0.0
+                    '''
+                }
+            }
         }
-    }
-}
-
         stage('Install Flutter') {
             steps {
                 script {
@@ -94,6 +103,14 @@ pipeline {
                         tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz -C ${WORKSPACE}
                         rm flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                     '''
+                }
+            }
+        }
+        stage('Cache Flutter') { // Optional caching stage
+            steps {
+                cache(path: "${FLUTTER_HOME}", key: "flutter-${FLUTTER_VERSION}") {
+                    // Flutter installation steps are already done in the previous stage
+                    echo "Flutter cached."
                 }
             }
         }
@@ -118,8 +135,6 @@ pipeline {
                 }
             }
         }
-
-        
         stage('Check Flutter Doctor') {
             steps {
                 script {
