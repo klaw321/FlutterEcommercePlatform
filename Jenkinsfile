@@ -73,13 +73,7 @@ pipeline {
                 }
             }
         }
-        stage('Cache Flutter') { // Optional caching stage
-            steps {
-                cache(path: "${FLUTTER_HOME}", key: "flutter-${FLUTTER_VERSION}") {
-                    echo "Flutter cached."
-                }
-            }
-        }
+        
         stage('Setup Flutter') {
             steps {
                 script {
