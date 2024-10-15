@@ -29,7 +29,7 @@ pipeline {
                 script {
                     sh '''
                         sudo apt-get update
-                        sudo apt-get install -y curl unzip wget git xz-utils clang cmake ninja-build pkg-config
+                        sudo apt-get install -y curl unzip wget git xz-utils clang cmake ninja-build pkg-config libgtk-3-dev
                     '''
                 }
             }
@@ -46,9 +46,10 @@ pipeline {
                 script {
                     echo 'Installing Android SDK Command Line Tools...'
                     sh '''
-                        mkdir -p "${ANDROID_HOME}/cmdline-tools/latest"
+                        mkdir -p "${ANDROID_HOME}/cmdline-tools/temp"
                         wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
                         unzip -o cmdline-tools.zip -d "${ANDROID_HOME}/cmdline-tools/temp"
+                        mkdir -p "${ANDROID_HOME}/cmdline-tools/latest"
                         mv "${ANDROID_HOME}/cmdline-tools/temp/cmdline-tools/"* "${ANDROID_HOME}/cmdline-tools/latest/"
                         rm -rf "${ANDROID_HOME}/cmdline-tools/temp"
                         rm cmdline-tools.zip
@@ -60,7 +61,10 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        sdkmanager --install "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+                        export PATH=${ANDROID_HOME}/cmdline-tools/latest/bin:$PATH
+                        sdkmanager --update
+                        yes | sdkmanager --licenses
+                        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" "platforms;android-33" "system-images;android-33;google_apis;x86_64"
                     '''
                 }
             }
@@ -72,10 +76,23 @@ pipeline {
                     sh '''
                         wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                         tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz -C ${WORKSPACE}
+                        rm flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                     '''
                 }
             }
         }
+        stage('Verify Android SDK Installation') {
+            steps {
+                script {
+                    sh '''
+                          ls -la ${ANDROID_HOME}/cmdline-tools/latest/bin
+                          ls -la ${ANDROID_HOME}/platform-tools
+                          ls -la ${ANDROID_HOME}/build-tools/33.0.0
+                       '''
+                        }
+    }
+}
+
         stage('Setup Flutter') {
             steps {
                 script {
@@ -83,6 +100,7 @@ pipeline {
                     sh '''
                         flutter config --android-sdk $ANDROID_HOME
                         flutter config --enable-web
+                        flutter doctor -v
                     '''
                 }
             }
@@ -91,8 +109,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        export ANDROID_HOME=$ANDROID_HOME
-                        export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
                         flutter pub get
                     '''
                 }
@@ -112,8 +128,6 @@ pipeline {
                 script {
                     echo 'Building APK...'
                     sh '''
-                        export ANDROID_HOME=$ANDROID_HOME
-                        export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
                         flutter build apk --release
                     '''
                 }
