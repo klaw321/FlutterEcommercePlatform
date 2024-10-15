@@ -60,32 +60,7 @@ pipeline {
                 }
             }
         }
-        stage('Install Android SDK Components') {
-            steps {
-                script {
-                    sh '''
-                        export PATH=${ANDROID_HOME}/cmdline-tools/latest/bin:$PATH
-                        sdkmanager --update
-                        yes | sdkmanager --licenses
-                        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" "platforms;android-33" "system-images;android-33;google_apis;x86_64"
-                    '''
-                }
-            }
-        }
-
         
- 
-        stage('Verify Android SDK Installation') {
-            steps {
-                script {
-                    sh '''
-                        ls -la ${ANDROID_HOME}/cmdline-tools/latest/bin
-                        ls -la ${ANDROID_HOME}/platform-tools
-                        ls -la ${ANDROID_HOME}/build-tools/33.0.0
-                    '''
-                }
-            }
-        }
         stage('Install Flutter') {
             steps {
                 script {
