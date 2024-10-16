@@ -17,7 +17,7 @@ pipeline{
  stages {
   stage('Checkout code') {
               steps {
-                  git branch: 'main', url: 'https://github.com/anicetkeric/flutter_firebase_distribution.git'
+                  git branch: 'main', url: 'https://github.com/klaw321/FlutterEcommercePlatform.git'
                   }
     }
  stage('Get app version') {
@@ -47,7 +47,7 @@ pipeline{
             steps {
                 sh '''
     firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk  \
-     --app $FIREBASE_APP_ID --token $FIREBASE_TOKEN \
+     --app $FIREBASE_APP_ID \
      --release-notes "Bug fixes and improvements" --groups "team-qa"
   '''
             }
