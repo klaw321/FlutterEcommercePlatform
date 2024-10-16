@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.kamal.twitter"
+    namespace = "com.kamal.ecommerce"
     compileSdk = 34 // Set to the latest stable version
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.kamal.twitter"
+        applicationId = "com.kamal.ecommerce"
         minSdk = 23 // Updated from flutter.minSdkVersion to 23
         targetSdk = 34 // Set to the latest stable version
         versionCode = flutter.versionCode
