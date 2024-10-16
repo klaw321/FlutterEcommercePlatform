@@ -5,7 +5,7 @@ plugins {
     id 'com.google.gms.google-services' version '4.3.15' apply false
     
     // Apply the Android Gradle plugin declaratively but do not apply it here
-    id 'com.android.tools.build.gradle' version '8.1.0' apply false
+    id 'com.android.tools.build.gradle' version '8.0.2' apply false
 
     // Apply other necessary plugins here with apply false if needed
 }
