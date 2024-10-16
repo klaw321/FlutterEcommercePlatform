@@ -47,7 +47,7 @@ pipeline{
             steps {
                 sh '''
     firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk  \
-     --app $FIREBASE_APP_ID \
+     --app $FIREBASE_APP_ID --token $FIREBASE_TOKEN\
      --release-notes "Bug fixes and improvements" --groups "team-qa"
   '''
             }
