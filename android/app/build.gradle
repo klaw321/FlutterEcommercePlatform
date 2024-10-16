@@ -5,6 +5,7 @@ plugins {
     
     // Apply the Google Services Gradle plugin declaratively
     id 'com.google.gms.google-services'
+   
 }
 
 android {
@@ -48,6 +49,8 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.3.0')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
+    classpath 'com.android.tools.build:gradle:8.0.2' // or the latest version
+
     // Other Firebase products can be added without specifying the version
     // For example:
     // implementation 'com.google.firebase:firebase-analytics'
