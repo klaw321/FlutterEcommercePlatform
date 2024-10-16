@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1022730543292",
+    "project_id": "ecommerce-b8226",
+    "storage_bucket": "ecommerce-b8226.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022730543292:android:69c380bea5771f044df0b9",
+        "android_client_info": {
+          "package_name": "com.kamal.ecommerce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApq8IVCcteKWoWdW4wpEIwKOIxqdicaAc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
