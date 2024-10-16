@@ -2,8 +2,8 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'dev.flutter.flutter-gradle-plugin'
-
-    // Add the Google services Gradle plugin declaratively
+    
+    // Apply the Google Services Gradle plugin declaratively
     id 'com.google.gms.google-services'
 }
 
@@ -32,6 +32,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
