@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.kamal."  >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.kamal.ecommerce"  >
     <application
         android:label="e_commerce"
         android:name="${applicationName}"
