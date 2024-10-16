@@ -1,4 +1,4 @@
-package com.kamal.twitter
+package com.kamal.ecommerce
 
 import io.flutter.embedding.android.FlutterActivity
 
