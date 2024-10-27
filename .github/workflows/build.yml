@@ -1,8 +1,8 @@
 name: Deploy to Firebase
 on:
-    push:
-      branches:
-        - main
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -56,3 +56,13 @@ jobs:
           testers: "kushalpokharel234@gmail.com"
           file: build/app/outputs/flutter-apk/app-release.apk
           debug: true
+
+      # Slack notification
+      - name: Notify Slack
+        if: always()  # Ensure this step runs even if the build fails
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data \
+          "{\"text\":\"Deployment to Firebase completed for commit: $GITHUB_SHA. Check Firebase for the latest APK.\"}" \
+          $SLACK_WEBHOOK_URL
