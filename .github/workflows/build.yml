@@ -56,7 +56,11 @@ jobs:
           testers: "kushalpokharel234@gmail.com"
           file: build/app/outputs/flutter-apk/app-release.apk
           debug: true
-
+      # githubreleases
+      - name: githubreleases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Release.txt
       # Slack notification
       - name: Notify Slack
         if: always()  # Ensure this step runs even if the build fails
