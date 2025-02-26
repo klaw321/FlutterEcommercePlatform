@@ -33,12 +33,18 @@ stage('dependencies') {
     steps {
         sh '''
         echo "Checking Flutter path..."
-        which flutter
+        which flutter || exit 1
         flutter --version
-        flutter pub get
+
+        echo "Cleaning old dependencies..."
+        rm -rf pubspec.lock .dart_tool
+
+        echo "Fetching dependencies..."
+        flutter pub get || exit 1
         '''
     }
 }
+
 
         stage('Build') {
             steps {
