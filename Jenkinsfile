@@ -29,13 +29,16 @@ pipeline{
         }
 
 
- stage('dependencies') {
-            steps {
-                sh '''
-      flutter pub get
-  '''
-            }
-        }
+stage('dependencies') {
+    steps {
+        sh '''
+        echo "Checking Flutter path..."
+        which flutter
+        flutter --version
+        flutter pub get
+        '''
+    }
+}
 
         stage('Build') {
             steps {
