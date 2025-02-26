@@ -32,18 +32,27 @@ pipeline{
 stage('dependencies') {
     steps {
         sh '''
-        echo "Checking Flutter path..."
+        echo "Checking Flutter installation..."
         which flutter || exit 1
         flutter --version
 
-        echo "Cleaning old dependencies..."
+        echo "Verifying project structure..."
+        if [ ! -f pubspec.yaml ]; then
+            echo "Error: pubspec.yaml not found!"
+            exit 66
+        fi
+
+        echo "Cleaning dependencies..."
         rm -rf pubspec.lock .dart_tool
 
         echo "Fetching dependencies..."
-        flutter pub get || exit 1
+        export PUB_HOSTED_URL=https://pub.dev
+        export FLUTTER_STORAGE_BASE_URL=https://storage.googleapis.com
+        flutter pub get --verbose || exit 1
         '''
     }
 }
+
 
 
         stage('Build') {
